@@ -42,7 +42,7 @@ namespace IceCreamShop.Models
             decimal bill = 0;
             foreach(var item in OrderedItems)
             {
-                bill += item.Price;
+                bill += item.Amount;
             }
 
             return bill;

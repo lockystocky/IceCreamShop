@@ -4,62 +4,108 @@
     ViewBag.Title = "My Shopping Cart";
 }
 
-<h2>My Shopping Cart</h2>
+<div class="row">
+    
+    <div class="col-sm-6" style="margin:auto">
+        <h3>My Shopping Cart</h3>
 
-<ol>
-    @foreach (var order in Model)
-    {
-        <li>
-            <h4>Order <@order.Date></h4>
-            <ul>
-                @foreach (var item in order.OrderedItems)
-                {
-                    <li>
-                        @item.Name @item.Price $
-                        @if (!order.Paid)
-                        {
-                         <button class="btndel btn btn-sm" value="@item.Id">-</button>
+        @foreach (var order in Model)
+        {
+            IFormatProvider formatProvider = new System.Globalization.CultureInfo("en-US");
+        <table class="table">
+            @foreach (var item in order.OrderedItems)
+        {
+            <tr>
+                <td>
+                    <h5>@item.Name</h5>
+                    <p>
+                        @{
+                        
+                        @item.Price.ToString("C", formatProvider)
                         }
-                    </li>
+                    </p>
+                    <ul>
+                        @foreach (var ingr in item.AdditionalIngredients)
+                    {
+                        <li>@ingr.Name  (@ingr.Quantity items)</li>
                 }
-            </ul>
-            <p>Total bill: @order.TotalBill $</p>
-            @if (!order.Paid)
-            {
-                <button id ="btnpay" class="btn btn-default" value="@order.Id" >Pay</button>
-            }
-            else
-            {
-                <p>Paid</p>
-            }
-            @if (order.Paid && order.Delivered)
-            {
-                <p>State: Delivered</p>
-            }
-            else if (order.Paid && !order.Delivered)
-            {
-                <p>State: In the process of delivery</p>
-            }
-        </li>
+                    </ul>
+                </td>
+                <td>
+                    <button type="button" class="decreasebtn btn btn-sm" value="@item.Id">-</button>
+                    <input class="quantity" value="@item.Quantity" style="width: 30px" />
+                    <button type="button" class="increasebtn btn btn-sm" value="@item.Id">+</button>
+                </td>
+                <td>
+                    @{
+                        //IFormatProvider formatProvider = new System.Globalization.CultureInfo("en-US");
+                        @item.Amount.ToString("C", formatProvider)
+                     }
+                </td>
+                <td>
+                    <button class="btndel btn btn-sm" value="@item.Id">X</button>
+                </td>
+            </tr>
     }
-</ol>
+            <tr><td><h6>Total: @order.TotalBill.ToString("C", formatProvider)</h6></td></tr>
+        </table>
+}
+        <button id="tomenu" type="button" class="btn btn-default">Continue shopping</button>
+    </div>
+    
+</div>
+        
+       
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script>
-    $('.btndel').click(function (event) {
-        var itemId = $(this).val();
-        var item = $(this).closest('li');
-        $.post('/shoppingcart/removeitem',
-            {
-                id: itemId
-            },
-            function () {
-                item.hide();
-                window.location.reload(true);
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script>
+
+            $('#tomenu').click(function () {
+                window.location.href = '/menu/index';
             });
-    });
-</script>
+
+            $('.btndel').click(function (event) {
+                var itemId = $(this).val();
+                var item = $(this).closest('li');
+                $.post('/shoppingcart/removeitem',
+                    {
+                        id: itemId
+                    },
+                    function () {
+                        item.hide();
+                        window.location.reload(true);
+                    });
+            });
+
+            $('.decreasebtn').click(function () {
+                var itemId = $(this).val();
+                var quantEl = $(this).siblings('.quantity');
+                var curQuant = (parseInt(quantEl.val()));
+                if (curQuant < 1) return;
+                $.post('/shoppingcart/changeitemquantity', {
+                    id: itemId,
+                    newQuantity: --curQuant
+                },
+                    function () {
+                        quantEl.val(curQuant);
+                    });
+            });
+
+            $('.increasebtn').click(function () {
+                var itemId = $(this).val();
+                var quantEl = $(this).siblings('.quantity');
+                var curQuant = (parseInt(quantEl.val()));
+                
+                $.post('/shoppingcart/changeitemquantity', {
+                    id: itemId,
+                    newQuantity: ++curQuant
+                    },
+                    function () {
+                        quantEl.val(curQuant);
+                    });
+            });
+        </script>
 
 

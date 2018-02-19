@@ -24,21 +24,16 @@ namespace IceCreamShop.Controllers
             var orders = db.Orders
                 .Where(o => o.Customer.ApplicationUserId == currentUserId
                 && !o.Delivered)
-                .Include(o => o.OrderedItems)
+                .Include(o => o.OrderedItems.Select(oi => oi.AdditionalIngredients))
                 .ToList();
 
             return View(orders);
         }
 
+
         public ActionResult RemoveItem(int id)
         {
-            var currentUserId = User.Identity.GetUserId();
-
-            var order = db.Orders
-                .Where(o => o.Customer.ApplicationUserId == currentUserId
-                && !o.Paid)
-                .Include(o => o.OrderedItems)
-                .FirstOrDefault();
+            var order = GetCurrentOrder();
 
             var item = order.OrderedItems
                 .Where(i => i.Id == id)
@@ -54,7 +49,54 @@ namespace IceCreamShop.Controllers
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
-        
+        public Order GetCurrentOrder()
+        {
+            var currentUserId = User.Identity.GetUserId();
+
+            var order = db.Orders
+                .Where(o => o.Customer.ApplicationUserId == currentUserId
+                && !o.Paid)
+                .Include(o => o.OrderedItems)
+                .FirstOrDefault();
+
+            return order;
+        }
+
+        [HttpPost]
+        public ActionResult ChangeItemQuantity(int id, int newQuantity)
+        {
+            if(newQuantity < 1)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            var order = GetCurrentOrder();
+
+            var item = order.OrderedItems
+                .Where(i => i.Id == id)
+                .FirstOrDefault();
+
+            if (item == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            item.Quantity = newQuantity;
+            item.Amount = item.CountAmount();
+            order.TotalBill = order.CountBill();
+            db.SaveChanges();
+
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
+        }
+
+        public ActionResult GetItemsQuantity()
+        {
+            Order order = GetCurrentOrder();
+            int quantity = 0;
+            foreach(var item in order.OrderedItems)
+            {
+                quantity += item.Quantity;
+            }
+
+            return Json(quantity, JsonRequestBehavior.AllowGet);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)

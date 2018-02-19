@@ -76,10 +76,6 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
     <script>
 
-        function addItem(itemId) {
-
-        }
-
         function fillMenu(data) {
             if ($.isEmptyObject(data)) {
                 $('#menu')
@@ -101,14 +97,13 @@
             var newRow = $('<tr>')
                 .append($('<td>').text(menuItem.Name))
                 .append($('<td>').text(menuItem.Weight + ' g'))
-                // .append($('<td>').text(menuItem.Price + ' $'));
                 .append($('<td>').text(numeral(menuItem.Price).format('$0,0.00')));
 
             if ($('#identity').length > 0) {
                 var addLink = $('<a>').attr('name', menuItem.Id)
                     .addClass('add-item')
                     .attr('href', '/menu/createitem/' + this.Id)
-                    .text('Add');
+                    .text('Buy');
                 newRow.append($('<td>').append(addLink));
             }
 

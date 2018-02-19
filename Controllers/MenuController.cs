@@ -51,6 +51,7 @@ namespace IceCreamShop.Controllers
             List<SelectedIngredient> selectedIngredients = new List<SelectedIngredient>();
             foreach(var ingr in menuItem.AdditionalIngredients)
             {
+                
                 SelectedIngredient selectedIngr = new SelectedIngredient
                 {
                     Name = ingr.Name,
@@ -87,6 +88,32 @@ namespace IceCreamShop.Controllers
             };
 
             return orderedItem;
+        } 
+
+        public Order CreateOrderForCurCustomer()
+        {
+            var context = new ApplicationDbContext();
+            var currentUserId = User.Identity.GetUserId();
+            var currentUser = context.Users.FirstOrDefault(u => u.Id == currentUserId);
+
+            Order order = new Order
+            {
+                Customer = new Customer
+                {
+                    FirstName = currentUser.FirstName,
+                    LastName = currentUser.LastName,
+                    Email = currentUser.Email,
+                    Phone = currentUser.Phone,
+                    ApplicationUserId = currentUserId
+                },
+                Delivered = false,
+                Paid = false,
+                OrderedItems = new List<OrderedItem>(),
+                Date = DateTime.Now
+            };
+            db.Orders.Add(order);
+            db.SaveChanges();
+            return order;
         }
 
         [Authorize]
@@ -104,14 +131,16 @@ namespace IceCreamShop.Controllers
                         
             foreach(SelectedIngredient selectedIngr in selectedIngredients)
             {   
-                 orderedItem.AdditionalIngredients.Add(selectedIngr);
+                if(selectedIngr.Quantity > 0)
+                    orderedItem.AdditionalIngredients.Add(selectedIngr);
             }
 
             orderedItem.Price = orderedItem.CountPrice();
-                        
-            var context = new ApplicationDbContext();
+            orderedItem.Quantity = 1;
+            orderedItem.Amount = orderedItem.CountAmount();
+            FileLogger.Log(DateTime.Now + "amount = " + orderedItem.Amount.ToString());
+
             var currentUserId = User.Identity.GetUserId();
-            var currentUser = context.Users.FirstOrDefault(u => u.Id == currentUserId);
             
             Order order = db.Orders
                 .Where(o => o.Customer.ApplicationUserId == currentUserId && !o.Paid)
@@ -120,22 +149,7 @@ namespace IceCreamShop.Controllers
 
             if (order == null)
             {
-                order = new Order
-                {
-                    Customer = new Customer
-                    {
-                        FirstName = currentUser.FirstName,
-                        LastName = currentUser.LastName,
-                        Email = currentUser.Email,
-                        Phone = currentUser.Phone,
-                        ApplicationUserId = currentUserId
-                    },
-                    Delivered = false,
-                    Paid = false,
-                    OrderedItems = new List<OrderedItem>(),
-                    Date = DateTime.Now
-                };
-                db.Orders.Add(order);
+                order = CreateOrderForCurCustomer();                
             }
 
             order.OrderedItems.Add(orderedItem);
@@ -292,6 +306,7 @@ namespace IceCreamShop.Controllers
         {
             if (ModelState.IsValid)
             {
+                menuItem.Quantity = 50;
                 db.MenuItems.Add(menuItem);
                 db.SaveChanges();
                 return RedirectToAction("Index");

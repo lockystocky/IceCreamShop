@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNet.Identity
+@if (Request.IsAuthenticated)
+{
+    @Html.AntiForgeryToken()
+
+    <ul class="nav navbar-nav navbar-right">
+        <li>
+            <button id="shcart" type="button" class="btn btn-info" >
+                Cart <span id="items" class="badge badge-light">0</span>
+            </button>
+        </li>
+    </ul>
+}
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    $(function () {
+        $.get('/shoppingcart/getitemsquantity', function (data) {
+            $('#items').text(data);
+        });
+    });
+
+    $('#shcart').click(function () {
+        window.location.href = '/shoppingcart/index';
+    });
+</script>
