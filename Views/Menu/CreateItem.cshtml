@@ -1,0 +1,82 @@
+﻿@model List<IceCreamShop.Models.SelectedIngredient>
+
+@{
+    ViewBag.Title = "CreateItem";
+}
+<br/>
+@using (Html.BeginForm())
+{
+<div class="row">
+    <div class="col-sm-3">
+    </div>
+    <div class="col-sm-6">
+        <h4>Add some extra ingredients to your dish</h4>
+        <table class="table">
+            @for (int i = 0; i < Model.Count; i++)
+        {
+            <tr>
+                @Html.EditorFor(modelItem => Model[i].Name, new { htmlAttributes = new { @class = "form-control", @value = @Model[i].Name, @style = "display: none" } })
+                @Html.EditorFor(modelItem => Model[i].Price, new { htmlAttributes = new { @class = "form-control", @value = @Model[i].Price, @style = "display: none" } })
+                @Html.EditorFor(modelItem => Model[i].Weight, new { htmlAttributes = new { @class = "form-control", @value = @Model[i].Weight, @style = "display: none" } })
+
+
+                <td>@Model[i].Name</td>
+                <td>(@Model[i].Weight g)</td>
+                <td>
+                    @{
+                    IFormatProvider formatProvider = new System.Globalization.CultureInfo("en-US");
+                    @Model[i].Price.ToString("C", formatProvider)
+                    }
+                </td>
+                <td>
+                    <span class="quantity">0</span>
+                    @Html.EditorFor(modelItem => Model[i].Quantity, new { htmlAttributes = new { @class = "bind-quantity", @value = @Model[i].Weight, @style = "display: none" } })
+
+                    <button type="button" class="delbtn btn btn-sm">-</button> <button type="button" class="addbtn btn btn-sm">+</button>
+                </td>
+            </tr>
+
+
+    }
+        </table>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Add to cart" class="btn btn-default" />
+                <button id="backbtn" type="button" class="btn btn-default" >Back</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+    </div>
+</div>
+        }
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script>
+
+            $('#backbtn').click(function () {
+                window.location.href = '/menu';
+            });
+
+            $('.addbtn').click(function () {
+                var curValue = $(this).prevAll('.quantity').text();
+                if (parseInt(curValue) < 5) {
+                    curValue++;
+                    $(this).prevAll('.quantity').text(curValue);
+                    $(this).prevAll('.bind-quantity').val(curValue);
+                }
+            });
+
+            $('.delbtn').click(function () {
+                var curValue = $(this).prevAll('.quantity').text();
+                if (parseInt(curValue) > 0) {
+                    curValue--;
+                    $(this).prevAll('.quantity').text(curValue);
+                    $(this).prevAll('.bind-quantity').val(curValue);
+                }
+            });
+
+        </script>

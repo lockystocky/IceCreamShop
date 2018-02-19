@@ -1,0 +1,74 @@
+﻿@model IceCreamShop.Models.Order
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Order</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Address)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Address)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Paid)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Paid)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Delivered)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Delivered)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DeliveryCharge)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DeliveryCharge)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ServiceCharge)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ServiceCharge)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TotalBill)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TotalBill)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

@@ -1,0 +1,65 @@
+﻿@model IEnumerable<IceCreamShop.Models.Order>
+
+@{
+    ViewBag.Title = "My Shopping Cart";
+}
+
+<h2>My Shopping Cart</h2>
+
+<ol>
+    @foreach (var order in Model)
+    {
+        <li>
+            <h4>Order <@order.Date></h4>
+            <ul>
+                @foreach (var item in order.OrderedItems)
+                {
+                    <li>
+                        @item.Name @item.Price $
+                        @if (!order.Paid)
+                        {
+                         <button class="btndel btn btn-sm" value="@item.Id">-</button>
+                        }
+                    </li>
+                }
+            </ul>
+            <p>Total bill: @order.TotalBill $</p>
+            @if (!order.Paid)
+            {
+                <button id ="btnpay" class="btn btn-default" value="@order.Id" >Pay</button>
+            }
+            else
+            {
+                <p>Paid</p>
+            }
+            @if (order.Paid && order.Delivered)
+            {
+                <p>State: Delivered</p>
+            }
+            else if (order.Paid && !order.Delivered)
+            {
+                <p>State: In the process of delivery</p>
+            }
+        </li>
+    }
+</ol>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>
+    $('.btndel').click(function (event) {
+        var itemId = $(this).val();
+        var item = $(this).closest('li');
+        $.post('/shoppingcart/removeitem',
+            {
+                id: itemId
+            },
+            function () {
+                item.hide();
+                window.location.reload(true);
+            });
+    });
+</script>
+
+
