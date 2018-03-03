@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using IceCreamShop.Models;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace IceCreamShop.Controllers
 {
@@ -157,14 +158,51 @@ namespace IceCreamShop.Controllers
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+
                     // Дополнительные сведения о включении подтверждения учетной записи и сброса пароля см. на странице https://go.microsoft.com/fwlink/?LinkID=320771.
                     // Отправка сообщения электронной почты с этой ссылкой
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Подтверждение учетной записи", "Подтвердите вашу учетную запись, щелкнув <a href=\"" + callbackUrl + "\">здесь</a>");
 
-                    return RedirectToAction("Index", "Home");
+                    //ApplicationDbContext context = new ApplicationDbContext();
+
+                    //var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
+                    //var UserManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
+
+
+                    // In Startup iam creating first Admin Role and creating a default Admin User    
+                    /*if (!roleManager.RoleExists("Admin"))
+                    {
+
+                        // first we create Admin rool   
+                        var role = new Microsoft.AspNet.Identity.EntityFramework.IdentityRole();
+                        role.Name = "Admin";
+                        roleManager.Create(role);
+                    }
+                        //Here we create a Admin super user who will maintain the website                  
+
+                        var userAdmin = new ApplicationUser();
+                        userAdmin.UserName = "Admin";
+                        userAdmin.Email = "admin@gmail.com";
+                        userAdmin.FirstName = "Admin";
+                        userAdmin.LastName = "Admin";
+                        userAdmin.PhoneNumber = "11111";
+
+                        string adminPassword = "P@ssw0rd";
+
+                        //var chkUser = UserManager.Create(userAdmin, adminPassword);
+                        var resultAdmin = await UserManager.CreateAsync(userAdmin, adminPassword);
+
+                        //Add default User to Role Admin   
+                        if (resultAdmin.Succeeded)
+                        {
+                            var result1 = UserManager.AddToRole(userAdmin.Id, "Admin");
+                            return RedirectToAction("Index", "Home");
+                        }*/
+                    
+
+                        return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
             }

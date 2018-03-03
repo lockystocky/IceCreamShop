@@ -30,7 +30,7 @@ namespace IceCreamShop.Controllers
             return View(db.MenuItems.ToList());
         }
 
-        [Authorize]
+        //[Authorize]
         public ActionResult CreateItem(int? id)
         {
             if (id == null)

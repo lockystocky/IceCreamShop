@@ -31,11 +31,8 @@
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Price)
-                </th>
-                @if (Request.IsAuthenticated)
-                {
-                    <th></th>
-                }
+                </th>                
+                <th></th>
             </tr>
 
             @foreach (var item in Model)
@@ -48,18 +45,26 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Weight)
                 </td>
-                <td>                    
-                    @Html.DisplayFor(modelItem => item.Price)                    
+                <td>
+                    @{IFormatProvider formatProvider = new System.Globalization.CultureInfo("en-US");}
+                    @item.Price.ToString("C", formatProvider)
                 </td>
 
-                @if (Request.IsAuthenticated)
-                {
-                    <td>
+                
+                <td>
+                    @if (Request.IsAuthenticated)
+                    {
+                        @Html.ActionLink("Buy", "CreateItem", new { id = item.Id })
+                    }
+                    @if (!Request.IsAuthenticated)
+                    {
+                        @Html.ActionLink("Details", "CreateItem", new { id = item.Id })/*
                         @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
                         @Html.ActionLink("Details", "Details", new { id = item.Id }) |
-                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
-                    </td>
-                }
+                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })*/
+                     }
+                </td>
+                
             </tr>
             }
 
@@ -70,85 +75,4 @@
     </div>
 </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
-    <script>
-
-        function fillMenu(data) {
-            if ($.isEmptyObject(data)) {
-                $('#menu')
-                    .empty()
-                    .append($('<p>').text('No items available'));
-                return;
-            }
-            $('#menu').empty();
-        var table = $('<table class="table">');
-        var theader = $('<tr>')
-            .append($('<th>').text('Name'))
-            .append($('<th>').text('Weight'))
-            .append($('<th>').text('Price'))
-            .append($('<th>'));
-        table.append(theader);
-
-        $.each(data, function () {
-            var menuItem = this;
-            var newRow = $('<tr>')
-                .append($('<td>').text(menuItem.Name))
-                .append($('<td>').text(menuItem.Weight + ' g'))
-                .append($('<td>').text(numeral(menuItem.Price).format('$0,0.00')));
-
-            if ($('#identity').length > 0) {
-                var addLink = $('<a>').attr('name', menuItem.Id)
-                    .addClass('add-item')
-                    .attr('href', '/menu/createitem/' + this.Id)
-                    .text('Buy');
-                newRow.append($('<td>').append(addLink));
-            }
-
-            table.append(newRow);
-        });
-
-        $('#menu').append(table);
-
-        $('a.add-item').click(
-            function () {
-                var itemId = $(this).attr('name');
-                addItem(itemId);
-            });
-    };
-
-    $('button.category').click(function () {
-        var category = $(this).val();
-        $.getJSON('/menu/filtereditems', {categParam: category })
-            .done(function (data) {
-               fillMenu(data);
-            });
-    });
-
-    function fillCart(order) {
-        var div = $('<div>').append($('<a>').text('Your Shopping Cart:').attr('href', '/shoppingcart'));
-        var ul = $('<ul>');
-
-        $.each(order.OrderedItems, function () {
-            var orderItem = this;
-            var li = $('<li>').text(orderItem.Name + ' ' + orderItem.Price + ' $')
-                .appendTo(ul);
-        });
-        div.append(ul);
-        var bill = $('<p>').text('Total bill: ' + order.TotalBill + ' $').appendTo(div);
-        $('#cart').append(div);
-    };
-
-    $(function () {
-        if ($('#identity').length > 0) {
-            $.getJSON('/menu/getorder')
-             .done(function (order) {
-               fillCart(order)
-             });
-        }
-    });
-
-
-</script>
+<script src="~/Scripts/MyScripts/Menu/Index.js"></script>

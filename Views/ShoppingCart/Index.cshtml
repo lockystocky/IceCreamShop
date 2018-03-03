@@ -33,7 +33,7 @@
                 </td>
                 <td>
                     <button type="button" class="decreasebtn btn btn-sm" value="@item.Id">-</button>
-                    <input class="quantity" value="@item.Quantity" style="width: 30px" />
+                    <span class="quantity">@item.Quantity</span>
                     <button type="button" class="increasebtn btn btn-sm" value="@item.Id">+</button>
                 </td>
                 <td>
@@ -56,56 +56,7 @@
 </div>
         
        
-
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-        <script>
-
-            $('#tomenu').click(function () {
-                window.location.href = '/menu/index';
-            });
-
-            $('.btndel').click(function (event) {
-                var itemId = $(this).val();
-                var item = $(this).closest('li');
-                $.post('/shoppingcart/removeitem',
-                    {
-                        id: itemId
-                    },
-                    function () {
-                        item.hide();
-                        window.location.reload(true);
-                    });
-            });
-
-            $('.decreasebtn').click(function () {
-                var itemId = $(this).val();
-                var quantEl = $(this).siblings('.quantity');
-                var curQuant = (parseInt(quantEl.val()));
-                if (curQuant < 1) return;
-                $.post('/shoppingcart/changeitemquantity', {
-                    id: itemId,
-                    newQuantity: --curQuant
-                },
-                    function () {
-                        quantEl.val(curQuant);
-                    });
-            });
-
-            $('.increasebtn').click(function () {
-                var itemId = $(this).val();
-                var quantEl = $(this).siblings('.quantity');
-                var curQuant = (parseInt(quantEl.val()));
-                
-                $.post('/shoppingcart/changeitemquantity', {
-                    id: itemId,
-                    newQuantity: ++curQuant
-                    },
-                    function () {
-                        quantEl.val(curQuant);
-                    });
-            });
-        </script>
+<script src="~/Scripts/MyScripts/ShoppingCart/Index.js"></script>
+        
 
 
