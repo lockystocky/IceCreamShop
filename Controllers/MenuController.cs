@@ -9,6 +9,7 @@ using System.Web.Mvc;
 using IceCreamShop.Models;
 using Microsoft.AspNet.Identity;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace IceCreamShop.Controllers
 {
@@ -25,23 +26,23 @@ namespace IceCreamShop.Controllers
         private ShopDbContext db = new ShopDbContext();
 
         // GET: Menu
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {            
-            return View(db.MenuItems.ToList());
+            return View(await db.MenuItems.ToListAsync());
         }
 
         //[Authorize]
-        public ActionResult CreateItem(int? id)
+        public async Task<ActionResult> CreateItem(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            MenuItem menuItem = db.MenuItems
+            MenuItem menuItem = await db.MenuItems
                .Where(x => x.Id == id)
                .Include(x => x.AdditionalIngredients)
-               .FirstOrDefault();
+               .FirstOrDefaultAsync();
 
             if (menuItem == null)
             {
@@ -65,13 +66,13 @@ namespace IceCreamShop.Controllers
             return View(selectedIngredients);
         }
 
-        public OrderedItem CreateOrderedItem(int menuItemId)
+        public async Task<OrderedItem> CreateOrderedItem(int menuItemId)
         {
-            MenuItem menuItem = db.MenuItems
+            MenuItem menuItem = await db.MenuItems
                  .Where(x => x.Id == menuItemId)
                  .Include(x => x.AdditionalIngredients)
-                 .FirstOrDefault();
-
+                 .FirstOrDefaultAsync();
+            
             if (menuItem == null)
             {
                 return null;
@@ -90,11 +91,11 @@ namespace IceCreamShop.Controllers
             return orderedItem;
         } 
 
-        public Order CreateOrderForCurCustomer()
+        public async Task<Order> CreateOrderForCurCustomer()
         {
             var context = new ApplicationDbContext();
             var currentUserId = User.Identity.GetUserId();
-            var currentUser = context.Users.FirstOrDefault(u => u.Id == currentUserId);
+            var currentUser = await context.Users.FirstOrDefaultAsync(u => u.Id == currentUserId);
 
             Order order = new Order
             {
@@ -112,22 +113,22 @@ namespace IceCreamShop.Controllers
                 Date = DateTime.Now
             };
             db.Orders.Add(order);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return order;
         }
 
         [Authorize]
         [HttpPost]
-        public ActionResult CreateItem(int? id, List<SelectedIngredient> selectedIngredients)
+        public async Task<ActionResult> CreateItem(int? id, List<SelectedIngredient> selectedIngredients)
         {
-            
+            const int DEFAULT_QUANTITY = 1;
             db.Database.Log = logInfo => FileLogger.Log(logInfo);
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            OrderedItem orderedItem = CreateOrderedItem((int)id);
+            OrderedItem orderedItem = await CreateOrderedItem((int)id);
                         
             foreach(SelectedIngredient selectedIngr in selectedIngredients)
             {   
@@ -136,40 +137,40 @@ namespace IceCreamShop.Controllers
             }
 
             orderedItem.Price = orderedItem.CountPrice();
-            orderedItem.Quantity = 1;
+            orderedItem.Quantity = DEFAULT_QUANTITY;
             orderedItem.Amount = orderedItem.CountAmount();
             FileLogger.Log(DateTime.Now + "amount = " + orderedItem.Amount.ToString());
 
             var currentUserId = User.Identity.GetUserId();
             
-            Order order = db.Orders
+            Order order = await db.Orders
                 .Where(o => o.Customer.ApplicationUserId == currentUserId && !o.Paid)
                 .Include(o => o.OrderedItems.Select(item => item.AdditionalIngredients))
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (order == null)
             {
-                order = CreateOrderForCurCustomer();                
+                order = await CreateOrderForCurCustomer();                
             }
 
             order.OrderedItems.Add(orderedItem);
             order.TotalBill = order.CountBill();
             
-            db.SaveChanges();
+            await db.SaveChangesAsync();
                         
              return RedirectToAction("Index");
         }
 
         [Authorize]
-        public ActionResult GetOrder()
+        public async Task<ActionResult> GetOrder()
         {
             var currentUserId = User.Identity.GetUserId();
 
-            Order order = db.Orders
+            Order order = await db.Orders
                 .Where(o => o.Customer.ApplicationUserId == currentUserId
                 && !o.Paid)
                 .Include(o => o.OrderedItems)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
                                    
             return Json(order, JsonRequestBehavior.AllowGet);
         }
@@ -232,28 +233,29 @@ namespace IceCreamShop.Controllers
         }
         */
 
-        public ActionResult FilteredItems(string categParam)
+        public async Task<ActionResult> FilteredItems(string categParam)
         {
             MenuCategory category = (MenuCategory)Enum.Parse(typeof(MenuCategory), categParam);
 
-            var items = db.MenuItems
+            var items = await db.MenuItems
                 .Where(item => item.Category == category)
-                .ToList();
+                .ToListAsync();
 
             return Json(items, JsonRequestBehavior.AllowGet);
         }
 
         // GET: Menu/Details/5
-        public ActionResult Details(int? id)
+        [Authorize(Roles = "Administrators")]
+        public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            MenuItem menuItem = db.MenuItems
+            MenuItem menuItem = await db.MenuItems
                .Where(x => x.Id == id)
                .Include(x => x.AdditionalIngredients)
-               .FirstOrDefault();
+               .FirstOrDefaultAsync();
 
             if (menuItem == null)
             {
@@ -263,6 +265,7 @@ namespace IceCreamShop.Controllers
         }
 
         // GET: Menu/CreateAdditionalIngredient/id
+        [Authorize(Roles = "Administrators")]
         public ActionResult CreateAdditionalIngredient(int? id)
         {
             if (id == null)
@@ -274,17 +277,18 @@ namespace IceCreamShop.Controllers
         }
 
         [HttpPost]
-        public ActionResult CreateAdditionalIngredient(Ingredient ingredient, int id)
+        [Authorize(Roles = "Administrators")]
+        public async Task<ActionResult> CreateAdditionalIngredient(Ingredient ingredient, int id)
         {            
             if (ModelState.IsValid)
             {
-                MenuItem item = db.MenuItems
+                MenuItem item = await db.MenuItems
                    .Where(x => x.Id == id)
                    .Include(x => x.AdditionalIngredients)
-                   .FirstOrDefault();
+                   .FirstOrDefaultAsync();
 
                 item.AdditionalIngredients.Add(ingredient);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Details/" + id);
             }
 
@@ -292,6 +296,7 @@ namespace IceCreamShop.Controllers
         }
 
         // GET: Menu/Create
+        [Authorize(Roles = "Administrators")]
         public ActionResult Create()
         {
             return View();
@@ -301,14 +306,15 @@ namespace IceCreamShop.Controllers
         // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
         // сведения см. в статье https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Administrators")]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,Decsription,Category,Weight,Price")] MenuItem menuItem)
+        public async Task<ActionResult> Create([Bind(Include = "Id,Name,Decsription,Category,Weight,Price")] MenuItem menuItem)
         {
             if (ModelState.IsValid)
             {
                 menuItem.Quantity = 50;
                 db.MenuItems.Add(menuItem);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
 
@@ -316,13 +322,14 @@ namespace IceCreamShop.Controllers
         }
 
         // GET: Menu/Edit/5
-        public ActionResult Edit(int? id)
+        [Authorize(Roles = "Administrators")]
+        public async Task<ActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            MenuItem menuItem = db.MenuItems.Find(id);
+            MenuItem menuItem = await db.MenuItems.FindAsync(id);
             if (menuItem == null)
             {
                 return HttpNotFound();
@@ -334,26 +341,28 @@ namespace IceCreamShop.Controllers
         // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
         // сведения см. в статье https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Administrators")]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,Decsription,Category,Weight,Price")] MenuItem menuItem)
+        public async Task<ActionResult> Edit([Bind(Include = "Id,Name,Decsription,Category,Weight,Price")] MenuItem menuItem)
         {
             if (ModelState.IsValid)
             {
                 db.Entry(menuItem).State = EntityState.Modified;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
             return View(menuItem);
         }
 
         // GET: Menu/Delete/5
-        public ActionResult Delete(int? id)
+        [Authorize(Roles = "Administrators")]
+        public async Task<ActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            MenuItem menuItem = db.MenuItems.Find(id);
+            MenuItem menuItem = await db.MenuItems.FindAsync(id);
             if (menuItem == null)
             {
                 return HttpNotFound();
@@ -362,13 +371,14 @@ namespace IceCreamShop.Controllers
         }
 
         // POST: Menu/Delete/5
+        [Authorize(Roles = "Administrators")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            MenuItem menuItem = db.MenuItems.Find(id);
+            MenuItem menuItem = await db.MenuItems.FindAsync(id);
             db.MenuItems.Remove(menuItem);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 

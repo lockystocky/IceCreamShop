@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using IceCreamShop.Models;
@@ -17,23 +18,23 @@ namespace IceCreamShop.Controllers
         private ShopDbContext db = new ShopDbContext();
 
         // GET: ShoppingCart
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         { 
             var currentUserId = User.Identity.GetUserId();
 
-            var orders = db.Orders
+            var orders = await db.Orders
                 .Where(o => o.Customer.ApplicationUserId == currentUserId
                 && !o.Delivered)
                 .Include(o => o.OrderedItems.Select(oi => oi.AdditionalIngredients))
-                .ToList();
+                .ToListAsync();
 
             return View(orders);
         }
 
 
-        public ActionResult RemoveItem(int id)
+        public async Task<ActionResult> RemoveItem(int id)
         {
-            var order = GetCurrentOrder();
+            var order = await GetCurrentOrder();
 
             var item = order.OrderedItems
                 .Where(i => i.Id == id)
@@ -44,31 +45,31 @@ namespace IceCreamShop.Controllers
 
             order.OrderedItems.Remove(item);
             order.TotalBill = order.CountBill();
-            db.SaveChanges();
+            await db.SaveChangesAsync();
 
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
-        public Order GetCurrentOrder()
+        public async Task<Order> GetCurrentOrder()
         {
             var currentUserId = User.Identity.GetUserId();
 
-            var order = db.Orders
+            var order = await db.Orders
                 .Where(o => o.Customer.ApplicationUserId == currentUserId
                 && !o.Paid)
                 .Include(o => o.OrderedItems)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             return order;
         }
 
         [HttpPost]
-        public ActionResult ChangeItemQuantity(int id, int newQuantity)
+        public async Task<ActionResult> ChangeItemQuantity(int id, int newQuantity)
         {
             if(newQuantity < 1)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-            var order = GetCurrentOrder();
+            var order = await GetCurrentOrder();
 
             var item = order.OrderedItems
                 .Where(i => i.Id == id)
@@ -80,14 +81,17 @@ namespace IceCreamShop.Controllers
             item.Quantity = newQuantity;
             item.Amount = item.CountAmount();
             order.TotalBill = order.CountBill();
-            db.SaveChanges();
+            await db.SaveChangesAsync();
 
-            return new HttpStatusCodeResult(HttpStatusCode.OK);
+            decimal[] newAmountAndPrice = { item.Amount, order.TotalBill};
+
+            //return new HttpStatusCodeResult(HttpStatusCode.OK);
+            return Json(newAmountAndPrice, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetItemsQuantity()
+        public async Task<ActionResult> GetItemsQuantity()
         {
-            Order order = GetCurrentOrder();
+            Order order = await GetCurrentOrder();
             int quantity = 0;
             foreach(var item in order.OrderedItems)
             {
