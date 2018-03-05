@@ -56,6 +56,7 @@
     function fillCart(order) {
         var div = $('<div>').append($('<a>').text('Your Shopping Cart:').attr('href', '/shoppingcart'));
         var ul = $('<ul>');
+        alert('fill cart');
         $.each(order.OrderedItems, function () {
             var orderItem = this;
             var li = $('<li>').text(orderItem.Name + ' ' + numeral(orderItem.Amount).format('$0,0.00'))
@@ -70,6 +71,7 @@
         if ($('#identity').length > 0) {
              $.getJSON('/menu/getorder')
                  .done(function (order) {
+                     alert('get order');
                    fillCart(order)
                  });
         }

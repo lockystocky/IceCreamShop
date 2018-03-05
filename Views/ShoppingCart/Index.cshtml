@@ -39,7 +39,7 @@
                 <td>
                     @{
                         //IFormatProvider formatProvider = new System.Globalization.CultureInfo("en-US");
-                        @item.Amount.ToString("C", formatProvider)
+                       @item.Amount.ToString("C", formatProvider)
                      }
                 </td>
                 <td>
@@ -47,7 +47,7 @@
                 </td>
             </tr>
     }
-            <tr><td><h6>Total: @order.TotalBill.ToString("C", formatProvider)</h6></td></tr>
+            <tr><td><h6 id="totalBill">Total: @order.TotalBill.ToString("C", formatProvider)</h6></td></tr>
         </table>
 }
         <button id="tomenu" type="button" class="btn btn-default">Continue shopping</button>
@@ -55,7 +55,7 @@
     
 </div>
         
-       
+<script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>     
 <script src="~/Scripts/MyScripts/ShoppingCart/Index.js"></script>
         
 

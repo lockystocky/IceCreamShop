@@ -15,17 +15,25 @@ $('.btndel').click(function (event) {
         });
 });
 
+function setNewPriceAndBill(quantEl, newQuant, data) {
+    quantEl.text(newQuant);
+    var priceEl = quantEl.closest('td').next('td');
+    priceEl.text(numeral(data[0]).format('$0,0.00'));
+    $('#totalBill').text(numeral(data[1]).format('$0,0.00'));
+}
+
 $('.decreasebtn').click(function () {
     var itemId = $(this).val();
     var quantEl = $(this).siblings('.quantity');
+    var priceEl = $(this).closest('td').next('td');
     var curQuant = (parseInt(quantEl.text()));
     if (curQuant < 1) return;
     $.post('/shoppingcart/changeitemquantity', {
         id: itemId,
         newQuantity: --curQuant
     },
-        function () {
-            quantEl.text(curQuant);
+        function (data) {
+            setNewPriceAndBill(quantEl, curQuant, data);
         });
 });
 
@@ -38,7 +46,7 @@ $('.increasebtn').click(function () {
         id: itemId,
         newQuantity: ++curQuant
     },
-        function () {
-            quantEl.text(curQuant);
+        function (data) {
+            setNewPriceAndBill(quantEl, curQuant, data);
         });
 });

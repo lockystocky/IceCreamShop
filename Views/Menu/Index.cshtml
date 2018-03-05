@@ -12,12 +12,12 @@
 <img src="~/Content/drawice.jpg" width="100%" />
 <div class="row">
     <div class="col-md-3">
-        <div class="btn-group-vertical btn-block" >
+        <div class="btn-group-vertical btn-block">
             <button type="button" class="btn btn-light category" value="IceCream">Ice cream</button>
             <button type="button" class="btn btn-light category" value="Yogurt">Yogurt</button>
             <button type="button" class="btn btn-light category" value="Drink">Drinks</button>
         </div>
-        
+
     </div>
     <div id="menu" class="col-md-6">
 
@@ -31,41 +31,41 @@
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Price)
-                </th>                
+                </th>
                 <th></th>
             </tr>
 
             @foreach (var item in Model)
             {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
 
-                <td>
-                    @Html.DisplayFor(modelItem => item.Weight)
-                </td>
-                <td>
-                    @{IFormatProvider formatProvider = new System.Globalization.CultureInfo("en-US");}
-                    @item.Price.ToString("C", formatProvider)
-                </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Weight)
+                    </td>
+                    <td>
+                        @{IFormatProvider formatProvider = new System.Globalization.CultureInfo("en-US");}
+                        @item.Price.ToString("C", formatProvider)
+                    </td>
 
-                
-                <td>
-                    @if (Request.IsAuthenticated)
-                    {
-                        @Html.ActionLink("Buy", "CreateItem", new { id = item.Id })
-                    }
-                    @if (!Request.IsAuthenticated)
-                    {
-                        @Html.ActionLink("Details", "CreateItem", new { id = item.Id })/*
-                        @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
-                        @Html.ActionLink("Details", "Details", new { id = item.Id }) |
-                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })*/
-                     }
-                </td>
-                
-            </tr>
+
+                    <td>
+                        @if (Request.IsAuthenticated)
+                        {
+                            @Html.ActionLink("Buy", "CreateItem", new { id = item.Id })
+                        }
+                        @if (!Request.IsAuthenticated)
+                        {
+                            @Html.ActionLink("Details", "CreateItem", new { id = item.Id })/*
+@Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+@Html.ActionLink("Details", "Details", new { id = item.Id }) |
+@Html.ActionLink("Delete", "Delete", new { id = item.Id })*/
+                        }
+                    </td>
+
+                </tr>
             }
 
         </table>
@@ -75,4 +75,6 @@
     </div>
 </div>
 
+<script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
 <script src="~/Scripts/MyScripts/Menu/Index.js"></script>
+
